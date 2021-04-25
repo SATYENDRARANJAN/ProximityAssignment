@@ -36,11 +36,11 @@ const BarComponent = (props) => {
         fill="black"
         style={{
           fontWeight: 900,
-          fontSize: 15
+          fontSize: 15 
         }}
       >
         🚩
-        {props.data.indexValue}
+        {props.data.indexValue} :  {parseFloat(props.data.value).toFixed(2)}
       </text>
       <text
         x={props.width - 16}
@@ -50,10 +50,10 @@ const BarComponent = (props) => {
         fill={props.borderColor}
         style={{
           fontWeight: 400,
-          fontSize: 13
+          fontSize: 11
         }}
       >
-        {parseFloat(props.data.value).toFixed(2)}
+       {props.data &&  props.data.data.date_received}
       </text>
     </g>
   );
@@ -79,7 +79,6 @@ const AirApp = () => {
   cityaqi_Ref.current=cityaqi_state
   executing_Ref.current=executing
   dato_Ref.current=dato
-  var timer=0
 
   useEffect(async() => {
     // websocket onmessage handler 
@@ -91,7 +90,6 @@ const AirApp = () => {
           const newT = new Date()
           await setExecuting(true)
           let updated_cityaqi_state = JSON.parse(message.data)
-
           var filtered_cityaqi_list=cityaqi_Ref.current
           for(let o2 of cityaqi_Ref.current){
             for( let o1 of updated_cityaqi_state){
@@ -100,7 +98,11 @@ const AirApp = () => {
               }
             }
           }
+          for (let obj in updated_cityaqi_state){
+            updated_cityaqi_state[obj]['date_received']=newT.toLocaleString()
+          }
           filtered_cityaqi_list= await filtered_cityaqi_list.concat(updated_cityaqi_state)
+
           await setCityaqi_state(filtered_cityaqi_list)
           await setDato(newT)
           }
@@ -112,14 +114,12 @@ const AirApp = () => {
         console.log('disconnected')
         // automatically try to reconnect on connection loss
         }
-
       client.onerror =()=>{
         console.error(
           "Socket encountered error "
         );
         client.close();
-      }
-    
+        }
     load()
   },[executing,setExecuting]);
   
