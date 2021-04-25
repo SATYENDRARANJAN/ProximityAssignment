@@ -1,4 +1,4 @@
-import React, {useState, useEffect } from "react";
+import React, {useState, useEffect ,useRef} from "react";
 import { Bar } from "@nivo/bar";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import {getColor,getDate}  from "./utils.js"
@@ -70,21 +70,39 @@ const AirApp = () => {
   };
 
   // State for city and aqi response,date 
-  const [cityaqi_state,setCityaqi_state] = useState([])
-  const [dato,setDato] = useState(null)
-  const [executing,setExecuting] = useState(false)
+  let [cityaqi_state,setCityaqi_state] = useState([])
+  let [dato,setDato] = useState(null)
+  let [executing,setExecuting] = useState(false)
+  var cityaqi_Ref = useRef();
+  var executing_Ref = useRef();
+  var dato_Ref = useRef();
+  cityaqi_Ref.current=cityaqi_state
+  executing_Ref.current=executing
+  dato_Ref.current=dato
   var timer=0
 
   useEffect(async() => {
     // websocket onmessage handler 
+    cityaqi_Ref.current= cityaqi_state
+    function load(){
       client.onmessage =async(message) => {
         // Check if block is already executing to delay the render
-        if(!executing){
+        if(!executing_Ref.current){
           const newT = new Date()
           await setExecuting(true)
-          if (dato== null  || ((new Date()-dato)>4000)){
-                await setCityaqi_state( await( JSON.parse(message.data)));
-                await setDato(newT)
+          let updated_cityaqi_state = JSON.parse(message.data)
+
+          var filtered_cityaqi_list=cityaqi_Ref.current
+          for(let o2 of cityaqi_Ref.current){
+            for( let o1 of updated_cityaqi_state){
+              if(o2['city'] ==o1['city']){
+                filtered_cityaqi_list = await filtered_cityaqi_list.filter((item)=> (item['city']!==o2['city']))
+              }
+            }
+          }
+          filtered_cityaqi_list= await filtered_cityaqi_list.concat(updated_cityaqi_state)
+          await setCityaqi_state(filtered_cityaqi_list)
+          await setDato(newT)
           }
         await setExecuting(false)
         }
@@ -101,7 +119,16 @@ const AirApp = () => {
         );
         client.close();
       }
-  },[]);
+    
+    load()
+  },[executing,setExecuting]);
+  
+  useEffect(()=>{
+    console.log("******* cityaqi_state*********",cityaqi_state)
+  },[cityaqi_state,setCityaqi_state])
+  
+  
+  
   // Sorting the bar graph data accroding to AQI values
   const barData = [...cityaqi_state].sort((a, b) => a.aqi - b.aqi);
   return (

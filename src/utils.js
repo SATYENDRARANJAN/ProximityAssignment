@@ -4,7 +4,7 @@ export const getColor=(data)=>{
     else if (data['value'] >50 && data['value']<=100) return '#5BEB45'
     else if (data['value'] >100 && data['value']<=200) return '#FCF6A1'
     else if (data['value'] >200 && data['value']<=300) return '#F6943E'
-    else if (data['value'] >301 && data['value']<=400) return '#E62020'
+    else if (data['value'] >300 && data['value']<=400) return '#E62020'
     else return '#6C0B1B'
   }
  
@@ -29,7 +29,7 @@ export const  getDate=(date_ob)=>{
   let seconds = date_ob.getSeconds();
   
   // prints date & time in YYYY-MM-DD HH:MM:SS format
-  console.log(year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
+  // console.log(year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
   return (year + "-" + month + "-" + date + " " + hours + ":" + minutes + ":" + seconds);
   }
   
